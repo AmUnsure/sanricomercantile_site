@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Website Preview - Sanrico Mercantile</title>
+    <script>
+        // Set theme immediately before anything loads
+        // Use a separate localStorage key for preview mode
+        const savedPreviewMode = localStorage.getItem('previewNightMode');
+        document.documentElement.setAttribute('data-theme', !savedPreviewMode || savedPreviewMode === 'dark' ? 'dark' : 'light');
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/preview-mode.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="js/auth.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/loading.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <img src="images/sanrico_logo_1.png" alt="Sanrico Mercantile Logo" id="loadingLogo">
+        <div id="loadingText">Loading Preview...</div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <img src="images/sanrico_logo_1.png" alt="Sanrico Mercantile Logo" class="logo-img" id="previewModeToggle" data-tooltip="Click to toggle dark/light mode">
+                <a href="#" class="logo" id="homeLink">
+                    Sanrico <span>Mercantile</span>
+                </a>
+            </div>
+            <div class="header-controls">
+                <button class="mobile-toggle" id="menuToggle">☰</button>
+                <nav>
+                    <ul id="mainMenu">
+                        <li><a href="#" id="homeNavLink">Home</a></li>
+                        <li><a href="#" id="shopNavLink">Shop</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div id="mainContent">
+        <!-- Content will be loaded dynamically -->
+        <section class="shop-section">
+            <div class="container">
+                <h2 class="section-title">Shop All Products</h2>
+                <div class="shop-controls">
+                    <div class="search-group">
+                        <label for="search-input">Search:</label>
+                        <input type="text" id="search-input" placeholder="Search products...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="category-filter">Category:</label>
+                        <select id="category-filter">
+                            <option value="all">All Categories</option>
+                            <option value="power-tools">Power Tools</option>
+                            <option value="hand-tools">Hand Tools</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="building-materials">Building Materials</option>
+                        </select>
+                    </div>
+                    <div class="sort-group">
+                        <label for="sort-by">Sort by:</label>
+                        <select id="sort-by">
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="name">Name: A-Z</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="product-grid" id="product-grid">
+                    <!-- Products will be populated by JavaScript -->
+                </div>
+                <div class="pagination" id="pagination">
+                    <!-- Pagination controls will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Product Detail Template (hidden) -->
+    <template id="productDetailTemplate">
+        <div class="breadcrumb">
+            <a href="#" id="breadcrumbHome">Home</a>
+            <span>/</span>
+            <a href="#" id="breadcrumbShop">Shop</a>
+            <span>/</span>
+            <span id="productName">Product Name</span>
+        </div>
+
+        <div class="product-container">
+            <div class="image-section">
+                <img id="productImage" src="images/placeholder.jpg" alt="Product Image" class="product-image">
+            </div>
+            <div class="product-details">
+                <h1 id="productTitle" class="product-details-title">Product Name</h1>
+                <div class="product-price">₱<span id="productPrice">0.00</span></div>
+                <a href="#" id="productCategory" class="product-category">Category</a>
+                <div class="product-description">
+                    <p id="productDescription">Product description will be shown here.</p>
+                    <div class="product-highlights">
+                        <h3>Highlights:</h3>
+                        <ul id="productHighlights">
+                            <li>Highlight 1</li>
+                            <li>Highlight 2</li>
+                            <li>Highlight 3</li>
+                            <li>Highlight 4</li>
+                        </ul>
+                    </div>
+                </div>
+                <button class="edit-description-btn" id="editProductBtn">Edit Description & Highlights</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Edit Description Modal -->
+    <div id="editDescriptionModal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Edit Product Details</h2>
+            <div class="form-group">
+                <label for="productNameInput">Product Name:</label>
+                <input type="text" id="productNameInput" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label for="productDescriptionInput">Description:</label>
+                <textarea id="productDescriptionInput" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Highlights (exactly 4):</label>
+                <div class="highlight-input">
+                    <input type="text" id="highlight1" class="form-control" placeholder="Highlight 1">
+                </div>
+                <div class="highlight-input">
+                    <input type="text" id="highlight2" class="form-control" placeholder="Highlight 2">
+                </div>
+                <div class="highlight-input">
+                    <input type="text" id="highlight3" class="form-control" placeholder="Highlight 3">
+                </div>
+                <div class="highlight-input">
+                    <input type="text" id="highlight4" class="form-control" placeholder="Highlight 4">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="cancelEditBtn">Cancel</button>
+                <button id="saveDescriptionBtn">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff indicator and back button -->
+    <div class="staff-indicator">STAFF PREVIEW MODE</div>
+    <a class="back-to-dashboard" href="staff-dashboard.html">← Back to Dashboard</a>
+
+    <!-- Toast Container -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Preview mode specific night mode toggle
+        document.getElementById('previewModeToggle').addEventListener('click', function() {
+            showLoading("Changing theme...");
+            
+            setTimeout(() => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                // Set theme for current page
+                document.documentElement.setAttribute('data-theme', newTheme);
+                
+                // Store theme preference specifically for preview mode
+                localStorage.setItem('previewNightMode', newTheme);
+                
+                // Show toast notification
+                hideLoading();
+                showToast(`Preview mode switched to ${newTheme} theme`);
+            }, 300);
+        });
+        
+        // Check if user is staff, otherwise redirect to login
+        document.addEventListener('DOMContentLoaded', function() {
+            // Keep loading screen visible until we verify auth
+            if (!Auth.isLoggedIn() || !Auth.getCurrentUser().isStaff) {
+                showLoading("Redirecting...");
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
+                return;
+            }
+            
+            // Initialize
+            init();
+        });
+        
+        function init() {
+            // Set up event listeners
+            document.getElementById('homeNavLink').addEventListener('click', function(e) {
+                showLoading("Loading Home Page...");
+                setTimeout(() => {
+                    showHomePage(e);
+                    hideLoading();
+                }, 300);
+            });
+            
+            document.getElementById('shopNavLink').addEventListener('click', function(e) {
+                showLoading("Loading Shop Page...");
+                setTimeout(() => {
+                    showShopPage(e);
+                    hideLoading();
+                }, 300);
+            });
+            
+            document.getElementById('homeLink').addEventListener('click', function(e) {
+                showLoading("Loading Home Page...");
+                setTimeout(() => {
+                    showHomePage(e);
+                    hideLoading();
+                }, 300);
+            });
+            
+            // Initialize product state
+            loadProducts();
+            
+            // Show shop page by default
+            showShopPage();
+            
+            // Mobile menu toggle
+            document.getElementById('menuToggle').addEventListener('click', function() {
+                document.getElementById('mainMenu').classList.toggle('show');
+            });
+            
+            // Modal event listeners
+            document.getElementById('cancelEditBtn').addEventListener('click', function() {
+                document.getElementById('editDescriptionModal').classList.remove('show');
+            });
+            
+            document.getElementById('saveDescriptionBtn').addEventListener('click', function() {
+                showLoading("Saving changes...");
+                setTimeout(() => {
+                    saveProductDetails();
+                    hideLoading();
+                }, 300);
+            });
+            
+            // Search and filter event listeners
+            document.getElementById('search-input').addEventListener('input', filterAndSortProducts);
+            document.getElementById('category-filter').addEventListener('change', filterAndSortProducts);
+            document.getElementById('sort-by').addEventListener('change', filterAndSortProducts);
+            
+            // Listen for storage changes to update category images and carousel
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'products') {
+                    // Update products array from localStorage
+                    products = JSON.parse(e.newValue || '[]');
+                    
+                    // Update UI if we're on the home page
+                    if (document.querySelector('.categories')) {
+                        updateCategoryImages();
+                        setupCarousel();
+                    }
+                }
+            });
+        }
+        
+        // Products state
+        let products = [];
+        let filteredProducts = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let currentProductId = null;
+        
+        function loadProducts() {
+            // Load products from localStorage
+            const savedProducts = localStorage.getItem('products');
+            if (savedProducts) {
+                products = JSON.parse(savedProducts);
+                
+                // Make sure all products have description and highlights fields
+                products = products.map(product => {
+                    // If no description, add default
+                    if (!product.description) {
+                        product.description = "No description available for this product.";
+                    }
+                    
+                    // If no highlights or not enough, create exactly 4
+                    if (!product.highlights || !Array.isArray(product.highlights) || product.highlights.length !== 4) {
+                        product.highlights = [
+                            "Durable and long-lasting construction",
+                            "Designed for professional use",
+                            "Ergonomic design for comfort",
+                            "Backed by manufacturer warranty"
+                        ];
+                    }
+                    
+                    // Ensure exactly 4 highlights
+                    if (product.highlights.length < 4) {
+                        // Add default items if less than 4
+                        const defaults = [
+                            "Durable and long-lasting construction",
+                            "Designed for professional use",
+                            "Ergonomic design for comfort",
+                            "Backed by manufacturer warranty"
+                        ];
+                        
+                        for (let i = product.highlights.length; i < 4; i++) {
+                            product.highlights.push(defaults[i]);
+                        }
+                    } else if (product.highlights.length > 4) {
+                        // Trim to exactly 4 if more
+                        product.highlights = product.highlights.slice(0, 4);
+                    }
+                    
+                    return product;
+                });
+                
+                // Save back to localStorage with descriptions and highlights
+                localStorage.setItem('products', JSON.stringify(products));
+                
+                console.log('Loaded products from localStorage:', products);
+                filteredProducts = [...products];
+            } else {
+                console.error('No products found in localStorage');
+            }
+        }
+        
+        function filterAndSortProducts() {
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const sortBy = document.getElementById('sort-by').value;
+
+            // Filter by search and category
+            filteredProducts = products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchQuery);
+                const matchesCategory = category === 'all' || product.category === category;
+                return matchesSearch && matchesCategory;
+            });
+
+            // Sort products
+            switch (sortBy) {
+                case 'price-low':
+                    filteredProducts.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    filteredProducts.sort((a, b) => b.price - a.price);
+                    break;
+                case 'name':
+                    filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+            }
+
+            currentPage = 1;
+            displayProducts();
+        }
+        
+        function displayProducts() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const displayedProducts = filteredProducts.slice(start, end);
+            
+            document.getElementById('product-grid').innerHTML = displayedProducts.map(product => `
+                <div class="product-card">
+                    <a href="#" class="product-link" data-product-id="${product.id}">
+                        <div class="product-img">
+                            <div class="product-image-container">
+                                <img src="${product.image.startsWith('data:image') ? product.image : 'images/' + product.image}" 
+                                     alt="${product.name}"
+                                     onerror="this.src='images/placeholder.jpg'">
+                            </div>
+                        </div>
+                        <div class="product-content">
+                            <h3 class="product-title">${product.name}</h3>
+                            <p class="price">₱${product.price.toFixed(2)}</p>
+                        </div>
+                    </a>
+                    <button class="edit-description-btn" data-product-id="${product.id}">Edit Description</button>
+                </div>
+            `).join('');
+            
+            // Add event listeners to product links and edit buttons
+            document.querySelectorAll('.product-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productId = parseInt(this.getAttribute('data-product-id'));
+                    showProductDetail(productId);
+                });
+            });
+            
+            document.querySelectorAll('.edit-description-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-product-id'));
+                    openEditModal(productId);
+                });
+            });
+            
+            updatePagination();
+        }
+        
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = i === currentPage ? 'active' : '';
+                button.onclick = () => {
+                    currentPage = i;
+                    displayProducts();
+                };
+                pagination.appendChild(button);
+            }
+        }
+        
+        function showHomePage(e) {
+            if (e) e.preventDefault();
+            
+            document.getElementById('mainContent').innerHTML = `
+                <!-- Hero Section -->
+                <section class="hero">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1>Quality Hardware for Every Project</h1>
+                            <p>Find the perfect tools and materials for your next home improvement, construction, or DIY project.</p>
+                            <button class="btn" id="shopNowBtn">Shop Now 🔨</button>
+                        </div>
+                        <div class="carousel-wrapper">
+                            <div id="carouselContainer" class="carousel">
+                                <!-- Carousel items will be populated by JavaScript -->
+                            </div>
+                            <div class="carousel-dots" id="carouselDots">
+                                <!-- Dots will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Categories Section -->
+                <section class="categories">
+                    <div class="container">
+                        <h2 class="section-title">Popular Categories</h2>
+                        <div class="category-grid">
+                            <div class="category-card" data-category="power-tools">
+                                <div class="category-img">
+                                    <img src="images/categories/power-tools.jpg" alt="Power Tools" onerror="this.src='images/placeholder.jpg'">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Power Tools</h3>
+                                    <p>High-performance drills, saws, and more</p>
+                                </div>
+                            </div>
+                            <div class="category-card" data-category="hand-tools">
+                                <div class="category-img">
+                                    <img src="images/categories/hand-tools.jpg" alt="Hand Tools" onerror="this.src='images/placeholder.jpg'">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Hand Tools</h3>
+                                    <p>Wrenches, hammers, and essential hand tools</p>
+                                </div>
+                            </div>
+                            <div class="category-card" data-category="plumbing">
+                                <div class="category-img">
+                                    <img src="images/categories/plumbing.jpg" alt="Plumbing" onerror="this.src='images/placeholder.jpg'">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Plumbing</h3>
+                                    <p>Pipes, fittings, and fixtures</p>
+                                </div>
+                            </div>
+                            <div class="category-card" data-category="electrical">
+                                <div class="category-img">
+                                    <img src="images/categories/electrical.jpg" alt="Electrical" onerror="this.src='images/placeholder.jpg'">
+                                </div>
+                                <div class="category-content">
+                                    <h3>Electrical</h3>
+                                    <p>Wiring, outlets, and electrical components</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Featured Products -->
+                <section class="featured">
+                    <div class="container">
+                        <h2 class="section-title">Featured Products</h2>
+                        <div class="product-grid" id="featuredProducts">
+                            <!-- Featured products will be loaded here -->
+                        </div>
+                    </div>
+                </section>
+            `;
+            
+            // Load and display featured products (first 4)
+            const featuredProducts = products.slice(0, 4);
+            document.getElementById('featuredProducts').innerHTML = featuredProducts.map(product => `
+                <div class="product-card">
+                    <a href="#" class="product-link" data-product-id="${product.id}">
+                        <div class="product-img">
+                            <img src="${product.image.startsWith('data:image') ? product.image : 'images/' + product.image}" 
+                                 alt="${product.name}"
+                                 onerror="this.src='images/placeholder.jpg'">
+                        </div>
+                        <div class="product-content">
+                            <h3 class="product-title">${product.name}</h3>
+                            <p class="price">₱${product.price.toFixed(2)}</p>
+                        </div>
+                    </a>
+                    <button class="edit-description-btn" data-product-id="${product.id}">Edit Description</button>
+                </div>
+            `).join('');
+            
+            // Setup carousel functionality
+            setupCarousel();
+            
+            // Update category images with random product images
+            updateCategoryImages();
+            
+            // Add event listeners
+            document.getElementById('shopNowBtn').addEventListener('click', showShopPage);
+            
+            // Setup category card click handlers
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    document.getElementById('category-filter').value = category;
+                    showShopPage();
+                    filterAndSortProducts();
+                });
+            });
+            
+            document.querySelectorAll('.product-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const productId = parseInt(this.getAttribute('data-product-id'));
+                    showProductDetail(productId);
+                });
+            });
+            
+            document.querySelectorAll('.edit-description-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-product-id'));
+                    openEditModal(productId);
+                });
+            });
+        }
+        
+        // Function to update category images with random product images
+        function updateCategoryImages() {
+            // Group products by category
+            const productsByCategory = products.reduce((acc, product) => {
+                if (!acc[product.category]) {
+                    acc[product.category] = [];
+                }
+                acc[product.category].push(product);
+                return acc;
+            }, {});
+
+            // Update category card images with random product images
+            document.querySelectorAll('.category-card').forEach(card => {
+                const category = card.getAttribute('data-category');
+                const categoryProducts = productsByCategory[category];
+                
+                if (categoryProducts && categoryProducts.length > 0) {
+                    const randomProduct = categoryProducts[Math.floor(Math.random() * categoryProducts.length)];
+                    const img = card.querySelector('img');
+                    if (img && randomProduct.image) {
+                        img.src = randomProduct.image.startsWith('data:image') ? 
+                            randomProduct.image : 
+                            'images/' + randomProduct.image;
+                    }
+                }
+            });
+        }
+        
+        function setupCarousel() {
+            // Select up to 3 random products for the carousel
+            const carouselProducts = [];
+            const productCategories = {};
+            
+            // Group products by category
+            products.forEach(product => {
+                if (!productCategories[product.category]) {
+                    productCategories[product.category] = [];
+                }
+                productCategories[product.category].push(product);
+            });
+            
+            // Get up to 3 products from different categories if possible
+            const categories = Object.keys(productCategories);
+            const selectedCategories = [];
+            
+            // Select up to 3 different categories
+            while (selectedCategories.length < 3 && categories.length > 0) {
+                const randomIndex = Math.floor(Math.random() * categories.length);
+                const category = categories.splice(randomIndex, 1)[0];
+                if (productCategories[category].length > 0) {
+                    selectedCategories.push(category);
+                }
+            }
+            
+            // Select one random product from each selected category
+            selectedCategories.forEach(category => {
+                const categoryProducts = productCategories[category];
+                const randomIndex = Math.floor(Math.random() * categoryProducts.length);
+                carouselProducts.push(categoryProducts[randomIndex]);
+            });
+            
+            // Update carousel HTML
+            const carouselContainer = document.getElementById('carouselContainer');
+            const dotsContainer = document.getElementById('carouselDots');
+            
+            if (!carouselContainer || !dotsContainer) return;
+            
+            // Clear existing content
+            carouselContainer.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            
+            // Add carousel items
+            carouselProducts.forEach((product, index) => {
+                // Create slide container
+                const slide = document.createElement('div');
+                slide.className = `carousel-slide ${index === 0 ? 'active' : ''}`;
+                slide.setAttribute('data-product-id', product.id);
+                
+                // Create link wrapper
+                const linkWrapper = document.createElement('div');
+                linkWrapper.className = 'carousel-link-wrapper';
+                
+                // Create link and image
+                const link = document.createElement('a');
+                link.href = "#";
+                link.className = 'carousel-link';
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    showProductDetail(product.id);
+                };
+                
+                const img = document.createElement('img');
+                img.src = product.image.startsWith('data:image') ? product.image : `images/${product.image}`;
+                img.alt = product.name;
+                img.onerror = function() { this.src = 'images/placeholder.jpg'; };
+                
+                // Assemble the elements
+                link.appendChild(img);
+                linkWrapper.appendChild(link);
+                slide.appendChild(linkWrapper);
+                carouselContainer.appendChild(slide);
+
+                // Add dot indicator
+                const dot = document.createElement('button');
+                dot.className = `carousel-dot ${index === 0 ? 'active' : ''}`;
+                dot.setAttribute('data-index', index);
+                dot.onclick = () => showSlide(index);
+                dotsContainer.appendChild(dot);
+            });
+
+            // Carousel rotation logic
+            let currentSlide = 0;
+            const slides = carouselContainer.children;
+            const dots = dotsContainer.children;
+            const totalSlides = slides.length;
+
+            function showSlide(index) {
+                // Remove active class from all slides and dots
+                Array.from(slides).forEach(slide => slide.classList.remove('active'));
+                Array.from(dots).forEach(dot => dot.classList.remove('active'));
+                
+                // Add active class to current slide and dot
+                slides[index].classList.add('active');
+                dots[index].classList.add('active');
+                
+                currentSlide = index;
+            }
+
+            // Handle click events on the carousel container
+            carouselContainer.addEventListener('click', (e) => {
+                const slide = e.target.closest('.carousel-slide');
+                if (slide) {
+                    const productId = parseInt(slide.getAttribute('data-product-id'));
+                    showProductDetail(productId);
+                }
+            });
+
+            // Auto rotate slides every 6 seconds if there are multiple slides
+            if (totalSlides > 1) {
+                setInterval(() => {
+                    const nextSlide = (currentSlide + 1) % totalSlides;
+                    showSlide(nextSlide);
+                }, 6000);
+            }
+        }
+        
+        function showShopPage(e) {
+            if (e) e.preventDefault();
+            
+            document.getElementById('mainContent').innerHTML = `
+                <section class="shop-section">
+                    <div class="container">
+                        <h2 class="section-title">Shop All Products</h2>
+                        <div class="shop-controls">
+                            <div class="search-group">
+                                <label for="search-input">Search:</label>
+                                <input type="text" id="search-input" placeholder="Search products...">
+                            </div>
+                            <div class="filter-group">
+                                <label for="category-filter">Category:</label>
+                                <select id="category-filter">
+                                    <option value="all">All Categories</option>
+                                    <option value="power-tools">Power Tools</option>
+                                    <option value="hand-tools">Hand Tools</option>
+                                    <option value="plumbing">Plumbing</option>
+                                    <option value="electrical">Electrical</option>
+                                    <option value="building-materials">Building Materials</option>
+                                </select>
+                            </div>
+                            <div class="sort-group">
+                                <label for="sort-by">Sort by:</label>
+                                <select id="sort-by">
+                                    <option value="price-low">Price: Low to High</option>
+                                    <option value="price-high">Price: High to Low</option>
+                                    <option value="name">Name: A-Z</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="product-grid" id="product-grid">
+                            <!-- Products will be populated by JavaScript -->
+                        </div>
+                        <div class="pagination" id="pagination">
+                            <!-- Pagination controls will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+            `;
+            
+            // Setup event listeners for search and filter
+            document.getElementById('search-input').addEventListener('input', filterAndSortProducts);
+            document.getElementById('category-filter').addEventListener('change', filterAndSortProducts);
+            document.getElementById('sort-by').addEventListener('change', filterAndSortProducts);
+            
+            // Display products
+            filteredProducts = [...products];
+            displayProducts();
+        }
+        
+        function showProductDetail(productId) {
+            showLoading("Loading Product Details...");
+            
+            setTimeout(() => {
+                const product = products.find(p => p.id === productId);
+                if (!product) {
+                    console.error('Product not found:', productId);
+                    hideLoading();
+                    return;
+                }
+                
+                currentProductId = productId;
+                
+                const template = document.getElementById('productDetailTemplate');
+                const content = template.content.cloneNode(true);
+                
+                document.getElementById('mainContent').innerHTML = '';
+                document.getElementById('mainContent').appendChild(content);
+                
+                // Set product details
+                document.getElementById('productName').textContent = product.name;
+                document.getElementById('productTitle').textContent = product.name;
+                document.getElementById('productPrice').textContent = product.price.toFixed(2);
+                document.getElementById('productCategory').textContent = product.category;
+                document.getElementById('productCategory').href = '#';
+                document.getElementById('productCategory').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showLoading("Loading Category...");
+                    setTimeout(() => {
+                        document.getElementById('category-filter').value = product.category;
+                        showShopPage();
+                        filterAndSortProducts();
+                        hideLoading();
+                    }, 300);
+                });
+                
+                // Set image
+                const productImage = document.getElementById('productImage');
+                productImage.src = product.image.startsWith('data:image') ? product.image : 'images/' + product.image;
+                productImage.onerror = () => { productImage.src = 'images/placeholder.jpg'; };
+                
+                // Set description
+                document.getElementById('productDescription').textContent = product.description || 'No description available.';
+                
+                // Set highlights
+                const highlightsList = document.getElementById('productHighlights');
+                highlightsList.innerHTML = '';
+                if (product.highlights && product.highlights.length > 0) {
+                    product.highlights.forEach(highlight => {
+                        const li = document.createElement('li');
+                        li.textContent = highlight;
+                        highlightsList.appendChild(li);
+                    });
+                } else {
+                    // Default highlights if none exist
+                    const defaultHighlights = [
+                        "Durable and long-lasting construction",
+                        "Designed for professional use",
+                        "Ergonomic design for comfort",
+                        "Backed by manufacturer warranty"
+                    ];
+                    
+                    defaultHighlights.forEach(highlight => {
+                        const li = document.createElement('li');
+                        li.textContent = highlight;
+                        highlightsList.appendChild(li);
+                    });
+                }
+                
+                // Add event listeners
+                document.getElementById('breadcrumbHome').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showLoading("Loading Home Page...");
+                    setTimeout(() => {
+                        showHomePage();
+                        hideLoading();
+                    }, 300);
+                });
+                
+                document.getElementById('breadcrumbShop').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showLoading("Loading Shop Page...");
+                    setTimeout(() => {
+                        showShopPage();
+                        hideLoading();
+                    }, 300);
+                });
+                
+                document.getElementById('editProductBtn').addEventListener('click', function() {
+                    openEditModal(productId);
+                });
+                
+                hideLoading();
+            }, 300);
+        }
+        
+        function openEditModal(productId) {
+            showLoading("Loading Edit Form...");
+            
+            setTimeout(() => {
+                const product = products.find(p => p.id === productId);
+                if (!product) {
+                    console.error('Product not found:', productId);
+                    hideLoading();
+                    return;
+                }
+                
+                currentProductId = productId;
+                
+                // Set form values
+                document.getElementById('productNameInput').value = product.name;
+                document.getElementById('productDescriptionInput').value = product.description || '';
+                
+                // Set highlight values
+                for (let i = 0; i < 4; i++) {
+                    const highlightInput = document.getElementById(`highlight${i+1}`);
+                    highlightInput.value = product.highlights && product.highlights[i] ? product.highlights[i] : '';
+                }
+                
+                // Show modal
+                document.getElementById('editDescriptionModal').classList.add('show');
+                hideLoading();
+            }, 300);
+        }
+        
+        function saveProductDetails() {
+            if (currentProductId === null) {
+                console.error('No product selected for editing');
+                return;
+            }
+            
+            const productIndex = products.findIndex(p => p.id === currentProductId);
+            if (productIndex === -1) {
+                console.error('Product not found:', currentProductId);
+                return;
+            }
+            
+            // Get form values
+            const description = document.getElementById('productDescriptionInput').value.trim();
+            const highlights = [
+                document.getElementById('highlight1').value.trim(),
+                document.getElementById('highlight2').value.trim(),
+                document.getElementById('highlight3').value.trim(),
+                document.getElementById('highlight4').value.trim()
+            ];
+            
+            // Validate - all highlights must be filled
+            if (highlights.some(h => h === '')) {
+                showToast('Please fill in all 4 highlight fields');
+                return;
+            }
+            
+            // Update product
+            products[productIndex].description = description;
+            products[productIndex].highlights = highlights;
+            
+            // Save to localStorage
+            localStorage.setItem('products', JSON.stringify(products));
+            
+            // Close modal
+            document.getElementById('editDescriptionModal').classList.remove('show');
+            
+            // Refresh current view
+            if (document.getElementById('productTitle')) {
+                // If in product detail view, refresh it
+                showProductDetail(currentProductId);
+            } else {
+                // Otherwise, refresh product list
+                displayProducts();
+            }
+            
+            showToast('Product details saved successfully');
+        }
+    </script>
+</body>
+</html> 
