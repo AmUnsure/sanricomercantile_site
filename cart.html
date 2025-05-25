@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Shopping Cart | Sanrico Mercantile Inc.</title>
+    <script>
+        // Set theme immediately before anything loads
+        const savedMode = localStorage.getItem('nightMode');
+        document.documentElement.setAttribute('data-theme', !savedMode || savedMode === 'dark' ? 'dark' : 'light');
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/auth.js"></script>
+    <script src="js/loginButton.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/nightMode.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <img src="images/sanrico_logo_1.png" alt="Sanrico Mercantile Logo" class="logo-img" id="nightModeToggle" data-tooltip="Click to toggle dark/light mode">
+                <a href="index.html" class="logo">
+                    Sanrico <span>Mercantile</span>
+                </a>
+            </div>
+            <div class="header-controls">
+                <button class="mobile-toggle" id="menuToggle">☰</button>
+                <nav>
+                    <ul id="mainMenu">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="aboutus.html">About Us</a></li>
+                    </ul>
+                </nav>
+                <button class="account-btn" id="loginBtn">
+                    <span class="profile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                    Log In
+                </button>
+                <a href="cart.html" class="cart-btn hidden" id="cartBtn" data-tooltip="₱0.00">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cart Section -->
+    <section class="cart-section">
+        <div class="container">
+            <h2 class="section-title">Shopping Cart</h2>
+            
+            <!-- Empty Cart Message -->
+            <div class="cart-empty" id="emptyCart" style="display: none;">
+                <p>Your cart is currently empty.</p>
+                <a href="shop.html" class="btn">Continue Shopping</a>
+            </div>
+            
+            <!-- Cart Content -->
+            <div id="cartContent">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartItems">
+                        <!-- Cart items will be populated by JavaScript -->
+                    </tbody>
+                </table>
+                
+                <div class="cart-footer">
+                    <a href="shop.html" class="btn btn-outline continue-shopping">Continue Shopping</a>
+                    <button id="clearCartBtn" class="btn btn-outline">Clear Cart</button>
+                </div>
+                
+                <div class="cart-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-table">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">₱0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span id="shipping">₱0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="total">₱0.00</span>
+                        </div>
+                    </div>
+                    
+                    <div class="notes">
+                        <label for="notes-input">Notes</label>
+                        <textarea id="notes-input" placeholder="Special instructions (optional)" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="checkout-options">
+                        <button id="checkoutBtn" class="btn">Checkout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shipping Address Modal -->
+    <div class="modal" id="shippingAddressModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeShippingModal">×</button>
+            <h2 class="modal-title">Add a New Shipping Address</h2>
+            <div class="form-group">
+                <label for="street-address">Street Address</label>
+                <input type="text" id="street-address" class="form-control" placeholder="Enter street address" required>
+            </div>
+            <div class="form-group">
+                <label for="barangay">Barangay</label>
+                <input type="text" id="barangay" class="form-control" placeholder="Enter barangay" required>
+            </div>
+            <div class="form-group">
+                <label for="city">City/Municipality</label>
+                <input type="text" id="city" class="form-control" placeholder="Enter city or municipality" required>
+            </div>
+            <div class="form-group">
+                <label for="province">Province</label>
+                <input type="text" id="province" class="form-control" placeholder="Enter province" required>
+            </div>
+            <div class="form-group">
+                <label for="phone-number-modal">Phone Number</label>
+                <input type="tel" id="phone-number-modal" class="form-control" placeholder="e.g., 09123456789" required>
+            </div>
+            <button class="btn" id="saveAddressBtn">Save to Profile</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?category=power-tools">Power Tools</a></li>
+                        <li><a href="shop.html?category=hand-tools">Hand Tools</a></li>
+                        <li><a href="shop.html?category=plumbing">Plumbing</a></li>
+                        <li><a href="shop.html?category=electrical">Electrical</a></li>
+                        <li><a href="shop.html?category=building-materials">Building Materials</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Information</h4>
+                    <ul>
+                        <li><a href="aboutus.html">About Us</a></li>
+                        <li><a href="#">Delivery Information</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Customer Service</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="#">Order Status</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li>Regalado Avenue</li>
+                        <li>Fairview, Quezon City</li>
+                        <li>Phone: (555) 123-4567</li>
+                        <li>Email: <a href="mailto:support@sanricomercantile@gmail.com">support@sanricomercantile@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 Sanrico Mercantile Inc. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Check if logged in as staff and redirect if needed
+        if (Auth.redirectIfStaff()) {
+            // Stop further execution if redirecting
+            throw new Error('Redirecting to staff dashboard');
+        }
+        
+        // Check if user is logged in, if not redirect to login
+        if (!Auth.isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+        
+        // Make sure toast.js is loaded
+        if (typeof showToast !== 'function') {
+            console.error('Toast function not available. Check if toast.js is loaded correctly.');
+            // Define a fallback
+            window.showToast = function(message, type) {
+                console.log('Toast (fallback):', message, type);
+                alert(message);
+            };
+        } else {
+            console.log('Toast function available and ready to use');
+        }
+
+        // Show/hide mobile menu
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            document.getElementById('mainMenu').classList.toggle('show');
+        });
+
+        // Load cart
+        const myCart = new Cart();
+        let cartItems = myCart.getItems();
+
+        // Show cart items
+        function displayCart() {
+            const cartContainer = document.getElementById('cartItems');
+            if (cartItems.length === 0) {
+                cartContainer.innerHTML = '<tr><td colspan="5"><p class="empty-cart">Your cart is empty</p></td></tr>';
+                document.getElementById('checkoutBtn').style.display = 'none';
+                return;
+            }
+
+            cartContainer.innerHTML = cartItems.map(item => `
+                <tr class="cart-item-row">
+                    <td class="product-cell">
+                        <div class="product-info">
+                    <img src="${item.image.startsWith('data:image') ? item.image : 'images/' + item.image}" 
+                         alt="${item.name}"
+                         onerror="this.src='images/placeholder.jpg'">
+                        <h3>${item.name}</h3>
+                        </div>
+                    </td>
+                    <td class="price-cell">₱${item.price.toFixed(2)}</td>
+                    <td class="quantity-cell">
+                        <div class="quantity-controls">
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        </div>
+                    </td>
+                    <td class="subtotal-cell">₱${(item.price * item.quantity).toFixed(2)}</td>
+                    <td class="action-cell">
+                    <button class="remove-item" onclick="removeItem(${item.id})">×</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            updateTotal();
+        }
+
+        // Update item count
+        function updateQuantity(id, newQuantity) {
+            if (newQuantity < 1) {
+                if (confirm('Do you want to remove this item from your cart?')) {
+                removeItem(id);
+                } else {
+                    // Keep the item with quantity 1
+                    myCart.updateQuantity(id, 1);
+                    cartItems = myCart.getItems();
+                    displayCart();
+                }
+                return;
+            }
+            myCart.updateQuantity(id, newQuantity);
+            cartItems = myCart.getItems();
+            displayCart();
+            showToast('Quantity updated');
+        }
+
+        // Remove item
+        function removeItem(id) {
+            myCart.removeItem(id);
+            cartItems = myCart.getItems();
+            displayCart();
+            showToast('Item removed from cart');
+        }
+
+        // Update total price
+        function updateTotal() {
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            document.getElementById('subtotal').textContent = `₱${subtotal.toFixed(2)}`;
+            
+            const shipping = myCart.shipping;
+            document.getElementById('shipping').textContent = `₱${shipping.toFixed(2)}`;
+            
+            const total = subtotal + shipping;
+            document.getElementById('total').textContent = `₱${total.toFixed(2)}`;
+            
+            // Update cart tooltip with total price
+            updateCartTooltip(subtotal);
+        }
+        
+        // Update cart tooltip
+        function updateCartTooltip(amount) {
+            const cartBtn = document.getElementById('cartBtn');
+            if (cartBtn) {
+                cartBtn.setAttribute('data-tooltip', `₱${amount.toFixed(2)}`);
+            }
+        }
+
+        // Check for shipping address before checkout
+        document.getElementById('checkoutBtn').addEventListener('click', () => {
+            if (!Auth.isLoggedIn()) {
+                showToast('Please log in to checkout.');
+                document.getElementById('loginModal').classList.add('show');
+                return;
+            }
+            
+            // Get current user and check for address
+            const currentUser = Auth.getCurrentUser();
+            const address = Auth.getUserAddress(currentUser.id);
+            
+            if (!address || address.trim() === '') {
+                // Show toast message first
+                showToast('Please enter an address to continue');
+                
+                // Then show the shipping address modal
+                setTimeout(() => {
+                    document.getElementById('shippingAddressModal').classList.add('show');
+                }, 500); // Slight delay to let toast appear first
+            } else {
+                // Proceed to checkout
+            window.location.href = 'checkout.html';
+            }
+        });
+        
+        // Close shipping address modal
+        document.getElementById('closeShippingModal').addEventListener('click', () => {
+            document.getElementById('shippingAddressModal').classList.remove('show');
+        });
+        
+        // Save address
+        document.getElementById('saveAddressBtn').addEventListener('click', () => {
+            // Get current user
+            const currentUser = Auth.getCurrentUser();
+            if (!currentUser) {
+                showToast('Please log in to save your address.');
+                return;
+            }
+            
+            // Get address components
+            const streetAddress = document.getElementById('street-address').value.trim();
+            const barangay = document.getElementById('barangay').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const province = document.getElementById('province').value.trim();
+            const phoneNumber = document.getElementById('phone-number-modal').value.trim();
+            
+            // Validate
+            if (!streetAddress || !barangay || !city || !province) {
+                showToast('Please fill in all required fields.');
+                return;
+            }
+            
+            if (!phoneNumber || !/^\d{11}$/.test(phoneNumber)) {
+                showToast('Please enter a valid 11-digit phone number (e.g., 09123456789).');
+                return;
+            }
+            
+            // Format address
+            const formattedAddress = [
+                streetAddress,
+                barangay,
+                city,
+                province
+            ].join(', ');
+            
+            // Save address and phone
+            Auth.updateUserProfile(currentUser.id, {
+                address: formattedAddress,
+                phoneNumber: phoneNumber
+            });
+            
+            showToast('Address saved successfully.');
+            document.getElementById('shippingAddressModal').classList.remove('show');
+            
+            // Redirect to checkout
+            setTimeout(() => {
+                window.location.href = 'checkout.html';
+            }, 1000); // Give time for the toast to be visible
+        });
+
+        // Handle Google login
+        function handleGoogleSignIn(response) {
+            console.log('Google Sign-In Response:', response);
+            const idToken = response.credential;
+            if (!idToken) {
+                console.error('No idToken received');
+                showToast('Google Sign-In failed: No token received');
+                return;
+            }
+            // Try to log in first
+            let result = Auth.googleLogin(idToken);
+            console.log('Login Result:', result);
+            if (!result.success && result.message.includes("not registered")) {
+                // If login fails, try to register
+                result = Auth.googleRegister(idToken);
+                console.log('Registration Result:', result);
+            }
+            showToast(result.message);
+            if (result.success) {
+                updateAccountButton();
+                document.getElementById('loginModal').classList.remove('show');
+            }
+        }
+
+        // Save notes when changed
+        document.getElementById('notes-input').addEventListener('change', function() {
+            myCart.notes = this.value;
+            myCart.saveCart();
+            showToast('Notes updated');
+        });
+
+        // Clear cart functionality
+        document.getElementById('clearCartBtn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to clear your cart?')) {
+                myCart.clearCart();
+                cartItems = myCart.getItems();
+                displayCart();
+                showToast('Cart cleared');
+            }
+        });
+
+        // Start page
+        document.addEventListener('DOMContentLoaded', () => {
+            displayCart();
+            // Load saved notes
+            const notesInput = document.getElementById('notes-input');
+            notesInput.value = myCart.notes || '';
+            
+            Auth.updateCartCount();
+            updateAccountButton();
+        });
+
+        // Logout button functionality
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                Auth.logout();
+                window.location.href = 'index.html';
+            });
+        } else {
+            console.warn('logoutBtn not found');
+        }
+    </script>
+    
+    <!-- Toast Container with inline style for better visibility -->
+    <div class="toast" id="toast" style="z-index: 9999; display: none;"></div>
+    
+    <script>
+        // Make sure we have a working toast function
+        window.addEventListener('load', function() {
+            console.log('Window loaded, checking toast functionality');
+            if (typeof showToast === 'function') {
+                console.log('Toast function is available on window load');
+            } else {
+                console.error('Toast function not available after page load');
+                alert('There might be an issue with the toast notifications. Please check the console.');
+            }
+        });
+    </script>
+</body>
+</html>
