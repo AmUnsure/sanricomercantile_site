@@ -1,0 +1,27 @@
+/* Tooltip styling for consistent use across the site */
+.logo-img {
+    position: relative;
+}
+
+.logo-img:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -30px;
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 9999;
+}
+
+/* Responsive adjustments for tooltips */
+@media (max-width: 480px) {
+    .logo-img:hover::after {
+        font-size: 12px;
+        padding: 3px 8px;
+        bottom: -25px;
+    }
+} 

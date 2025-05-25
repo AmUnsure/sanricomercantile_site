@@ -1,0 +1,110 @@
+/* Responsive design improvements for consistent display across devices */
+
+/* Small screens (≤480px) - Mobile phones */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .container {
+        padding: 0 10px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Improved spacing for mobile */
+    section {
+        padding: 1.5rem 0;
+    }
+    
+    /* Adjust buttons for better touch targets */
+    .btn {
+        padding: 10px 15px;
+        min-height: 44px; /* Minimum touch target size */
+    }
+    
+    /* Improve form elements for mobile */
+    input, select, textarea {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+    
+    /* Adjust footer for mobile */
+    .footer-container {
+        gap: 1.5rem;
+    }
+}
+
+/* Medium screens (481px-1024px) - Tablets and small laptops */
+@media (min-width: 481px) and (max-width: 1024px) {
+    body {
+        font-size: 15px;
+    }
+    
+    .container {
+        padding: 0 15px;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    /* Improved touch targets for tablets */
+    .btn, 
+    input[type="submit"],
+    input[type="button"] {
+        min-height: 40px;
+    }
+    
+    /* Two-column layout for tablets */
+    .footer-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
+    }
+}
+
+/* Large screens (1025px-1440px) - Desktops and laptops */
+@media (min-width: 1025px) and (max-width: 1440px) {
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    /* Comfortable reading width */
+    .about-content,
+    .contact-content,
+    .faq .accordion {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+}
+
+/* Extra large screens (≥1441px) - Large desktops */
+@media (min-width: 1441px) {
+    .container {
+        max-width: 1400px;
+    }
+    
+    body {
+        font-size: 17px;
+    }
+    
+    .section-title {
+        font-size: 2.25rem;
+    }
+    
+    /* Prevent excessive line length for readability */
+    .about-content,
+    .contact-content,
+    .faq .accordion {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    /* Larger images for big screens */
+    .product-img {
+        height: 280px;
+    }
+} 
