@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Profile | Sanrico Mercantile Inc.</title>
+    <script>
+        // Set theme immediately before anything loads
+        const savedMode = localStorage.getItem('nightMode');
+        document.documentElement.setAttribute('data-theme', !savedMode || savedMode === 'dark' ? 'dark' : 'light');
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/modal.css">
+    <link rel="stylesheet" href="css/tooltip.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/auth.js"></script>
+    <script src="js/loginButton.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/toast.js"></script>
+    <script src="js/nightMode.js"></script>
+    <style>
+        /* Address form styles */
+        .address-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .remove-address-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        
+        #profile-add-address-line {
+            padding: 2px 10px;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+        
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            min-height: auto;
+        }
+        
+        .address-section {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        /* Remove nickname button styles */
+        .input-with-remove-btn {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 2;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .btn-icon:hover {
+            background-color: var(--accent);
+        }
+        
+        /* Edit/Save button styles */
+        #editSaveProfileBtn .save-icon {
+            display: none;
+        }
+        
+        #editSaveProfileBtn.editing .edit-icon {
+            display: none;
+        }
+        
+        #editSaveProfileBtn.editing .save-icon {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo-container">
+                <img src="images/sanrico_logo_1.png" alt="Sanrico Mercantile Logo" class="logo-img" id="nightModeToggle" data-tooltip="Click to toggle dark/light mode">
+                <a href="index.html" class="logo">
+                    Sanrico <span>Mercantile</span>
+                </a>
+            </div>
+            <div class="header-controls">
+                <button class="mobile-toggle" id="menuToggle">☰</button>
+                <nav>
+                    <ul id="mainMenu">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="aboutus.html">About Us</a></li>
+                    </ul>
+                </nav>
+                <button class="account-btn" id="loginBtn">
+                    <span class="profile-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </span>
+                    Log In
+                </button>
+                <a href="cart.html" class="cart-btn hidden" id="cartBtn" data-tooltip="₱0.00">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="cart-count" id="cartCount">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Profile Section -->
+    <section class="profile-section">
+        <div class="container">
+            <h2 class="section-title">My Profile</h2>
+            <div class="profile-container">
+                <div class="profile-card">
+                    <h3>Personal Information</h3>
+                    <div class="form-group">
+                        <label for="profile-name">Full Name</label>
+                        <div class="input-with-button">
+                            <div class="input-with-remove-btn">
+                                <input type="text" id="profile-name" class="form-control" readonly>
+                                <button type="button" id="removeNicknameBtn" class="btn-icon hidden">×</button>
+                            </div>
+                            <button type="button" id="addNicknameBtn" class="btn btn-small">Add Nickname</button>
+                        </div>
+                        <div id="nickname-container" class="hidden mt-2">
+                            <input type="text" id="profile-nickname" class="form-control" placeholder="Enter nickname">
+                            <div class="nickname-buttons mt-1">
+                                <button type="button" id="saveNicknameBtn" class="btn btn-small">Save</button>
+                                <button type="button" id="cancelNicknameBtn" class="btn btn-small btn-danger">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-email">Email</label>
+                        <input type="email" id="profile-email" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-address">Shipping Address</label>
+                        <div class="address-section">
+                            <div class="form-group">
+                                <label for="profile-street">Street Address</label>
+                                <input type="text" id="profile-street" class="form-control" placeholder="Enter street address" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-barangay">Barangay</label>
+                                <input type="text" id="profile-barangay" class="form-control" placeholder="Enter barangay" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-city">City/Municipality</label>
+                                <input type="text" id="profile-city" class="form-control" placeholder="Enter city or municipality" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profile-province">Province</label>
+                                <input type="text" id="profile-province" class="form-control" placeholder="Enter province" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="profile-phone">Phone Number</label>
+                        <input type="tel" id="profile-phone" class="form-control" placeholder="e.g., 09123456789">
+                    </div>
+                    <div class="profile-buttons">
+                        <button class="btn" id="editSaveProfileBtn">
+                            <span class="edit-icon">✏️</span> Edit Profile
+                        </button>
+                        <button class="btn btn-danger hidden" id="cancelEditBtn">
+                            <span class="cancel-icon">❌</span> Cancel
+                        </button>
+                        <button class="btn btn-secondary" id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+                <div class="profile-card">
+                    <h3>Order History</h3>
+                    <div id="order-history">
+                        <!-- Order history will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Details Modal -->
+    <div class="modal order-details-modal" id="orderDetailsModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeOrderDetailsModal">×</button>
+            <div id="order-details-content">
+                <!-- Order details will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Save Modal -->
+    <div class="modal confirm-modal" id="confirmSaveModal">
+        <div class="modal-content">
+            <button class="modal-close" id="closeConfirmModal">×</button>
+            <h5>Confirm Save</h5>
+            <p id="confirmMessage"></p>
+            <div class="confirm-buttons">
+                <button class="btn" id="confirmOkBtn">OK</button>
+                <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <h4>Shop</h4>
+                    <ul>
+                        <li><a href="shop.html?category=power-tools">Power Tools</a></li>
+                        <li><a href="shop.html?category=hand-tools">Hand Tools</a></li>
+                        <li><a href="shop.html?category=plumbing">Plumbing</a></li>
+                        <li><a href="shop.html?category=electrical">Electrical</a></li>
+                        <li><a href="shop.html?category=building-materials">Building Materials</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Information</h4>
+                    <ul>
+                        <li><a href="aboutus.html">About Us</a></li>
+                        <li><a href="#">Delivery Information</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Customer Service</h4>
+                    <ul>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="#">Order Status</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact Us</h4>
+                    <ul>
+                        <li>Regalado Avenue</li>
+                        <li>Fairview, Quezon City</li>
+                        <li>Phone: (555) 123-4567</li>
+                        <li>Email: <a href="mailto:support@sanricomercantile@gmail.com">support@sanricomercantile@gmail.com</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 Sanrico Mercantile Inc. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Check if logged in as staff and redirect if needed
+        if (Auth.redirectIfStaff()) {
+            // Stop further execution if redirecting
+            throw new Error('Redirecting to staff dashboard');
+        }
+        
+        // Redirect to home if not logged in
+        if (!Auth.isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM fully loaded for profile.html');
+            
+            // Make sure toast.js is loaded
+            if (typeof showToast !== 'function') {
+                console.error('Toast function not available. Check if toast.js is loaded correctly.');
+                // Define a fallback
+                window.showToast = function(message, type) {
+                    console.log('Toast (fallback):', message, type);
+                    alert(message);
+                };
+            } else {
+                console.log('Toast function available and ready to use');
+            }
+            
+            const currentUser = Auth.getCurrentUser();
+            if (!currentUser) {
+                console.error('No current user, redirecting to index.html');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    console.log('Mobile menu toggled');
+                    document.getElementById('mainMenu').classList.toggle('show');
+                });
+            } else {
+                console.warn('menuToggle not found');
+            }
+
+            // Account button functionality
+            const accountBtn = document.getElementById('accountBtn');
+            if (accountBtn) {
+                accountBtn.addEventListener('click', () => {
+                    console.log('Account button clicked');
+                    if (Auth.isLoggedIn()) {
+                        window.location.href = 'profile.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
+            } else {
+                console.warn('accountBtn not found');
+            }
+
+            // Get form fields
+            const streetInput = document.getElementById('profile-street');
+            const barangayInput = document.getElementById('profile-barangay');
+            const cityInput = document.getElementById('profile-city');
+            const provinceInput = document.getElementById('profile-province');
+            const phoneInput = document.getElementById('profile-phone');
+            
+            // Set fields to disabled initially
+            const formFields = [streetInput, barangayInput, cityInput, provinceInput, phoneInput];
+            formFields.forEach(field => {
+                if (field) field.disabled = true;
+            });
+
+            // Display user info
+            const nameInput = document.getElementById('profile-name');
+            const emailInput = document.getElementById('profile-email');
+
+            if (nameInput && emailInput) {
+                // Handle name display (including nickname if exists)
+                const originalName = currentUser.fullName || '';
+                const nickname = currentUser.nickname || '';
+                const removeNicknameBtn = document.getElementById('removeNicknameBtn');
+                const addNicknameBtn = document.getElementById('addNicknameBtn');
+                
+                if (nickname) {
+                    nameInput.value = `${nickname} (${originalName})`;
+                    // Show remove button when nickname exists
+                    if (removeNicknameBtn) {
+                        removeNicknameBtn.classList.remove('hidden');
+                    }
+                    // Change "Add Nickname" to "Edit Nickname"
+                    if (addNicknameBtn) {
+                        addNicknameBtn.textContent = 'Edit Nickname';
+                    }
+                } else {
+                    nameInput.value = originalName;
+                    // Hide remove button when no nickname
+                    if (removeNicknameBtn) {
+                        removeNicknameBtn.classList.add('hidden');
+                    }
+                    // Set button text back to "Add Nickname"
+                    if (addNicknameBtn) {
+                        addNicknameBtn.textContent = 'Add Nickname';
+                    }
+                }
+                
+                nameInput.disabled = true; // Name is always disabled
+                emailInput.value = currentUser.email || '';
+                emailInput.disabled = true; // Email is always disabled
+                
+                // Store original name for later use
+                nameInput.dataset.originalName = originalName;
+                
+                const savedAddress = Auth.getUserAddress(currentUser.id) || '';
+                const phoneNumber = Auth.getUserPhone(currentUser.id) || '';
+                
+                // Handle structured address
+                if (savedAddress) {
+                    // Try to parse the address
+                    const addressParts = savedAddress.split(', ');
+                    
+                    if (addressParts.length >= 4) {
+                        document.getElementById('profile-street').value = addressParts[0] || '';
+                        document.getElementById('profile-barangay').value = addressParts[1] || '';
+                        document.getElementById('profile-city').value = addressParts[2] || '';
+                        document.getElementById('profile-province').value = addressParts[3] || '';
+                    }
+                }
+                
+                phoneInput.value = phoneNumber;
+            } else {
+                console.error('Profile input fields missing');
+            }
+
+            // Display order history
+            const orders = Auth.getUserOrders(currentUser.id);
+            console.log('Orders retrieved:', orders);
+            const orderHistory = document.getElementById('order-history');
+            if (orderHistory) {
+                orderHistory.innerHTML = orders.length > 0 ? orders.map((order, index) => {
+                    const subtotal = order.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+                    const total = subtotal + 150;
+                    return `
+                        <div class="order-item">
+                            <h4>Order #${index + 1} - ${new Date(order.date).toLocaleDateString()}</h4>
+                            <span class="order-status ${order.status.toLowerCase()}">${order.status}</span>
+                            <p class="items"><strong>Items:</strong> ${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</p>
+                            ${order.notes ? `<p class="notes"><strong>Notes:</strong> <span class="notes-content">${order.notes}</span></p>` : ''}
+                            ${order.shipping ? `
+                                <p class="shipping-address"><strong>Shipping Address:</strong> ${order.shipping.address}</p>
+                                <p class="phone-number"><strong>Phone Number:</strong> ${order.shipping.phoneNumber}</p>
+                            ` : ''}
+                            ${order.payment ? `
+                                <p class="payment-method"><strong>Payment Method:</strong> ${
+                                    order.payment.method === 'bank' ? 'Bank Transfer' :
+                                    order.payment.method === 'gcash' ? 'GCash' :
+                                    order.payment.method === 'cheque' ? 'Cheque' : 'Unknown'
+                                }</p>
+                            ` : ''}
+                            <button class="btn btn-secondary" onclick="showOrderDetails(${index})">View Details</button>
+                        </div>
+                    `;
+                }).join('') : '<p>No orders yet.</p>';
+            } else {
+                console.error('order-history element not found');
+            }
+
+            // Edit/Save Profile button
+            const editSaveProfileBtn = document.getElementById('editSaveProfileBtn');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            
+            if (editSaveProfileBtn) {
+                // Add the save icon which is initially hidden
+                if (!editSaveProfileBtn.querySelector('.save-icon')) {
+                    const saveIcon = document.createElement('span');
+                    saveIcon.className = 'save-icon';
+                    saveIcon.textContent = '💾';
+                    editSaveProfileBtn.insertBefore(saveIcon, editSaveProfileBtn.firstChild);
+                }
+                
+                editSaveProfileBtn.addEventListener('click', () => {
+                    // Toggle between edit and save modes
+                    if (editSaveProfileBtn.classList.contains('editing')) {
+                        // Currently in edit mode, try to save
+                        saveProfile();
+                    } else {
+                        // Currently in view mode, switch to edit mode
+                        enableEditMode();
+                    }
+                });
+            } else {
+                console.warn('editSaveProfileBtn not found');
+            }
+            
+            // Cancel Edit button
+            if (cancelEditBtn) {
+                cancelEditBtn.addEventListener('click', cancelEdit);
+            } else {
+                console.warn('cancelEditBtn not found');
+            }
+
+            // Logout button functionality
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    console.log('Logout button clicked');
+                    try {
+                        // Get display name before logout (nickname or full name)
+                        const displayName = currentUser.nickname || currentUser.fullName || 'User';
+                        
+                        const result = Auth.logout();
+                        console.log('Logout result:', result);
+                        
+                        // Show personalized success toast before redirecting
+                        showToast(`${displayName} has logged out`, 'success');
+                        
+                        // Short delay before redirect to ensure toast is visible
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 1500);
+                    } catch (error) {
+                        console.error('Error during logout:', error);
+                        showToast('Logout failed: ' + error.message, 'error');
+                    }
+                });
+            } else {
+                console.warn('logoutBtn not found');
+            }
+
+            // Nickname functionality
+            const addNicknameBtn = document.getElementById('addNicknameBtn');
+            const saveNicknameBtn = document.getElementById('saveNicknameBtn');
+            const cancelNicknameBtn = document.getElementById('cancelNicknameBtn');
+            const removeNicknameBtn = document.getElementById('removeNicknameBtn');
+            const nicknameContainer = document.getElementById('nickname-container');
+            const nicknameInput = document.getElementById('profile-nickname');
+            
+            // Function to update UI based on nickname status
+            function updateNicknameUI(hasNickname) {
+                const originalName = nameInput.dataset.originalName;
+                if (hasNickname) {
+                    const nickname = currentUser.nickname;
+                    nameInput.value = `${nickname} (${originalName})`;
+                    removeNicknameBtn.classList.remove('hidden');
+                    addNicknameBtn.textContent = 'Edit Nickname';
+                } else {
+                    nameInput.value = originalName;
+                    removeNicknameBtn.classList.add('hidden');
+                    addNicknameBtn.textContent = 'Add Nickname';
+                }
+            }
+            
+            if (addNicknameBtn) {
+                addNicknameBtn.addEventListener('click', () => {
+                    // Pre-fill nickname input if editing existing nickname
+                    if (currentUser.nickname) {
+                        nicknameInput.value = currentUser.nickname;
+                    }
+                    
+                    nicknameContainer.classList.remove('hidden');
+                    nicknameInput.focus();
+                });
+            }
+            
+            if (saveNicknameBtn) {
+                saveNicknameBtn.addEventListener('click', () => {
+                    const nickname = nicknameInput.value.trim();
+                    
+                    if (!nickname) {
+                        showToast('Please enter a nickname', 'warning');
+                        return;
+                    }
+                    
+                    // Save nickname
+                    const originalName = nameInput.dataset.originalName;
+                    Auth.updateUserProfile(currentUser.id, {
+                        nickname: nickname
+                    });
+                    
+                    // Update currentUser in memory to reflect changes
+                    currentUser.nickname = nickname;
+                    
+                    // Update display
+                    updateNicknameUI(true);
+                    
+                    // Hide nickname container
+                    nicknameContainer.classList.add('hidden');
+                    
+                    // Show success toast
+                    showToast('Nickname saved successfully', 'success');
+                });
+            }
+            
+            if (cancelNicknameBtn) {
+                cancelNicknameBtn.addEventListener('click', () => {
+                    // Clear nickname input
+                    nicknameInput.value = '';
+                    
+                    // Hide nickname container
+                    nicknameContainer.classList.add('hidden');
+                });
+            }
+            
+            // Remove Nickname button
+            if (removeNicknameBtn) {
+                removeNicknameBtn.addEventListener('click', () => {
+                    // Show confirmation using the custom confirm
+                    showConfirm('Are you sure you want to remove your nickname?').then(confirmed => {
+                        if (confirmed) {
+                            // Remove nickname
+                            Auth.updateUserProfile(currentUser.id, {
+                                nickname: ''
+                            });
+                            
+                            // Update currentUser in memory
+                            currentUser.nickname = '';
+                            
+                            // Update display using the UI function
+                            updateNicknameUI(false);
+                            
+                            // Show success toast
+                            showToast('Nickname removed successfully', 'success');
+                        }
+                    });
+                });
+            }
+
+            // Store original field values for cancel operation
+            let originalFieldValues = {};
+            
+            // Setup custom confirmation dialog
+            const confirmModal = document.getElementById('confirmSaveModal');
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmOkBtn = document.getElementById('confirmOkBtn');
+            const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+            const closeConfirmModal = document.getElementById('closeConfirmModal');
+            
+            // Custom confirm dialog variables
+            let confirmResolve = null;
+            
+            // Override the default confirm function
+            window.showConfirm = function(message) {
+                // Don't use the browser's built-in confirm
+                confirmMessage.textContent = message;
+                confirmModal.classList.add('show');
+                
+                // Return a promise that will be resolved when user makes a choice
+                return new Promise((resolve) => {
+                    confirmResolve = resolve;
+                });
+            }
+            
+            // Confirm dialog event listeners
+            if (confirmOkBtn) {
+                confirmOkBtn.addEventListener('click', () => {
+                    confirmModal.classList.remove('show');
+                    if (confirmResolve) {
+                        confirmResolve(true);
+                        confirmResolve = null;
+                    }
+                });
+            }
+            
+            if (confirmCancelBtn) {
+                confirmCancelBtn.addEventListener('click', () => {
+                    confirmModal.classList.remove('show');
+                    if (confirmResolve) {
+                        confirmResolve(false);
+                        confirmResolve = null;
+                    }
+                });
+            }
+            
+            if (closeConfirmModal) {
+                closeConfirmModal.addEventListener('click', () => {
+                    confirmModal.classList.remove('show');
+                    if (confirmResolve) {
+                        confirmResolve(false);
+                        confirmResolve = null;
+                    }
+                });
+            }
+            
+            // Enable edit mode
+            function enableEditMode() {
+                // Store original values before enabling edit
+                originalFieldValues = {
+                    street: streetInput.value,
+                    barangay: barangayInput.value,
+                    city: cityInput.value,
+                    province: provinceInput.value,
+                    phone: phoneInput.value
+                };
+                
+                // Enable form fields
+                formFields.forEach(field => {
+                    if (field) field.disabled = false;
+                });
+                
+                // Update button appearance
+                editSaveProfileBtn.classList.add('editing');
+                
+                // Clear the button content and rebuild it with proper icons
+                editSaveProfileBtn.innerHTML = '<span class="save-icon">💾</span> Save Profile';
+                
+                // Show cancel button
+                document.getElementById('cancelEditBtn').classList.remove('hidden');
+            }
+            
+            // Save profile function
+            function saveProfile() {
+                console.log('Save profile clicked');
+                
+                // Get all address components
+                const streetAddress = document.getElementById('profile-street').value.trim();
+                const barangay = document.getElementById('profile-barangay').value.trim();
+                const city = document.getElementById('profile-city').value.trim();
+                const province = document.getElementById('profile-province').value.trim();
+                const phoneNumber = document.getElementById('profile-phone').value.trim();
+                
+                // Validate
+                // Allow empty fields, but require at least one field to have content
+                const hasAnyData = streetAddress || barangay || city || province || phoneNumber;
+                
+                if (!hasAnyData) {
+                    showToast('Please fill in at least one field', 'warning');
+                    return;
+                }
+                
+                // Phone number is optional, but if provided, it must be valid
+                if (phoneNumber && !/^\d{11}$/.test(phoneNumber)) {
+                    showToast('If providing a phone number, please enter a valid 11-digit format (e.g., 09123456789)', 'warning');
+                    return;
+                }
+                
+                // Count empty fields
+                const fields = [
+                    { name: 'Street Address', value: streetAddress },
+                    { name: 'Barangay', value: barangay },
+                    { name: 'City/Municipality', value: city },
+                    { name: 'Province', value: province },
+                    { name: 'Phone Number', value: phoneNumber }
+                ];
+                
+                const emptyFields = fields.filter(field => !field.value);
+                const emptyFieldCount = emptyFields.length;
+                
+                // If there are empty fields, show confirmation dialog
+                if (emptyFieldCount > 0) {
+                    const message = `You've left ${emptyFieldCount} field${emptyFieldCount > 1 ? 's' : ''} empty. Do you wish to save?`;
+                    
+                    // Using async/await with the custom confirm
+                    showConfirm(message).then(confirmed => {
+                        if (confirmed) {
+                            // User clicked OK, continue with save
+                            completeProfileSave(streetAddress, barangay, city, province, phoneNumber);
+                        }
+                        // If not confirmed, do nothing
+                    });
+                    
+                    return; // Return early as we're handling the save in the promise
+                }
+                
+                // If no empty fields, proceed with save directly
+                completeProfileSave(streetAddress, barangay, city, province, phoneNumber);
+                
+            }
+            
+            // Function to complete the profile save after confirmation
+            function completeProfileSave(streetAddress, barangay, city, province, phoneNumber) {
+                // Format address - filter out empty values before joining
+                const addressParts = [streetAddress, barangay, city, province].filter(part => part.trim() !== '');
+                const formattedAddress = addressParts.join(', ');
+                
+                // Create update data object
+                const updateData = {
+                    address: formattedAddress
+                };
+                
+                // Only include phone number if provided
+                if (phoneNumber) {
+                    updateData.phoneNumber = phoneNumber;
+                }
+                
+                Auth.updateUserProfile(currentUser.id, updateData);
+                
+                // Show success toast notification
+                console.log('Showing success toast for profile update');
+                const toastShown = showToast('Profile updated successfully', 'success', 4000); // Extended duration for better visibility
+                
+                // Failsafe in case toast isn't showing
+                if (!toastShown) {
+                    console.warn('Toast might not be showing, using alert as fallback');
+                    alert('Profile updated successfully');
+                }
+                
+                // Disable form fields again
+                formFields.forEach(field => {
+                    if (field) field.disabled = true;
+                });
+                
+                // Reset button to edit mode
+                editSaveProfileBtn.classList.remove('editing');
+                
+                // Clear the button content and rebuild it with proper icons
+                editSaveProfileBtn.innerHTML = '<span class="edit-icon">✏️</span> Edit Profile';
+                
+                // Hide cancel button
+                document.getElementById('cancelEditBtn').classList.add('hidden');
+            }
+            
+            // Cancel edit function
+            function cancelEdit() {
+                console.log('Cancel edit clicked');
+                
+                // Restore original values
+                if (originalFieldValues) {
+                    streetInput.value = originalFieldValues.street || '';
+                    barangayInput.value = originalFieldValues.barangay || '';
+                    cityInput.value = originalFieldValues.city || '';
+                    provinceInput.value = originalFieldValues.province || '';
+                    phoneInput.value = originalFieldValues.phone || '';
+                }
+                
+                // Disable form fields again
+                formFields.forEach(field => {
+                    if (field) field.disabled = true;
+                });
+                
+                // Reset button to edit mode
+                editSaveProfileBtn.classList.remove('editing');
+                
+                // Clear the button content and rebuild it with proper icons
+                editSaveProfileBtn.innerHTML = '<span class="edit-icon">✏️</span> Edit Profile';
+                
+                // Hide cancel button
+                document.getElementById('cancelEditBtn').classList.add('hidden');
+                
+                // Show notification
+                console.log('Showing cancel toast notification');
+                showToast('Edit cancelled', 'info', 3000);
+            }
+        });
+    </script>
+    
+    <!-- Toast Container with inline style for better visibility -->
+    <div class="toast" id="toast" style="z-index: 9999; display: none;"></div>
+    
+    <script>
+        // Make sure we have a working toast function
+        window.addEventListener('load', function() {
+            console.log('Window loaded, checking toast functionality');
+            if (typeof showToast === 'function') {
+                console.log('Toast function is available on window load');
+                // Test the toast functionality
+                setTimeout(function() {
+                    showToast('Page loaded successfully', 'success', 3000);
+                }, 500);
+            } else {
+                console.error('Toast function not available after page load');
+                alert('There might be an issue with the toast notifications. Please check the console.');
+            }
+        });
+    </script>
+</body>
+</html>
